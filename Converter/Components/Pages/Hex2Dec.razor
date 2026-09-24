@@ -1,0 +1,63 @@
+﻿@page "/Hex2Dec"
+@rendermode InteractiveServer
+<h3>Hexadecimal to Decimal</h3>
+
+<div class="hex2dec">
+    <div>
+        <label for="hexStr">Шестнадцатеричное число:</label>
+        <input type="text" id="hexStr" @bind="hexStr" class="form-control" />
+
+        <button @onclick="Calculate" class="btn btn-primary">Перевести</button>
+    </div>
+
+    <div id="convert-result">@hexStr в 10-ичной = @result</div>
+</div>
+
+@code
+{
+    string hexStr = "0";
+    string result = "0";
+
+    void Calculate()
+    {
+        if (string.IsNullOrWhiteSpace(hexStr))
+        {
+            result = "0";
+            return;
+        }
+
+        string cleanStr = hexStr.Trim().ToUpper();
+
+        bool isNegative = cleanStr.StartsWith("-");
+        string hexDigitsOnly = isNegative ? cleanStr.Substring(1) : cleanStr;
+
+        int decimalValue = 0;
+        int baseValue = 1;
+        string hexDigits = "0123456789ABCDEF";
+
+        for (int i = hexDigitsOnly.Length - 1; i >= 0; i--)
+        {
+            char currentCar = hexDigitsOnly[i];
+            
+            int digitValue = hexDigits.IndexOf(currentCar);
+
+            if (digitValue == -1)
+            {
+                result = "Ошибка: неверные символы в HEX формате";
+                return;
+            }
+
+            decimalValue += digitValue * baseValue;
+            baseValue *= 16;
+        }
+
+        if (isNegative && decimalValue != 0)
+        {
+            result = "-" + decimalValue.ToString();
+        }
+        else
+        {
+            result = decimalValue.ToString();
+        }
+    }
+}

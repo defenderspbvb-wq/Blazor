@@ -1,0 +1,63 @@
+﻿@page "/Bin2Dec"
+@rendermode InteractiveServer
+<h3>Binary to Decimal</h3>
+
+<div class="bin2dec">
+    <div>
+        <label for="binaryStr">Двоичное число:</label>
+        <input type="text" id="binaryStr" @bind="binaryStr" class="form-control" />
+
+        <button @onclick="Calculate" class="btn btn-primary">Перевести</button>
+    </div>
+
+    <div id="convert-result">@binaryStr в 10-ичной = @result</div>
+</div>
+
+@code
+{
+    string binaryStr = "0";
+    string result = "0";
+
+    void Calculate()
+    {
+        if (string.IsNullOrWhiteSpace(binaryStr))
+        {
+            result = "0";
+            return;
+        }
+
+        string cleanStr = binaryStr.Trim();
+        bool isNegative = cleanStr.StartsWith("-");
+        string bits = isNegative ? cleanStr.Substring(1) : cleanStr;
+
+        foreach (char c in bits)
+        {
+            if (c != '0' && c != '1')
+            {
+                result = "Ошибка: число содержит неверные символы";
+                return;
+            }
+        }
+
+        int decimalValue = 0;
+        int baseValue = 1;
+
+        for (int i = bits.Length - 1; i >= 0; i--)
+        {
+            if (bits[i] == '1')
+            {
+                decimalValue += baseValue;
+            }
+            baseValue *= 2;
+        }
+
+        if (isNegative && decimalValue != 0)
+        {
+            result = "-" + decimalValue.ToString();
+        }
+        else
+        {
+            result = decimalValue.ToString();
+        }
+    }
+}

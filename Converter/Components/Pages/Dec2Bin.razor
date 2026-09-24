@@ -1,0 +1,48 @@
+﻿@page "/Dec2Bin"
+@rendermode InteractiveServer
+<h3>Decimal to Binary</h3>
+
+<div class="dec2bin">
+    <div>
+        <label for="number">Десятичное число:</label>
+        <input type="number" id="number" @bind="number" class="form-control" />
+
+        <button @onclick="Calculate" class="btn btn-primary">Перевести</button>
+    </div>
+
+    <div id="convert-result">@number в 2-ичной = @result</div>
+</div>
+
+@code
+{
+    int number = 0;
+    string result = "0";
+
+    void Calculate()
+    {
+        int tempNumber = number < 0 ? -number : number;
+        string binaryString = "";
+
+        if (number == 0)
+        {
+            result = "0";
+            return;
+        }
+        
+        while (tempNumber > 0)
+        {
+            int remainder = tempNumber % 2;
+            binaryString = remainder + binaryString;
+            tempNumber /= 2;
+        }
+
+        if (number < 0)
+        {
+            result = "-" + binaryString;
+        }
+        else
+        {
+            result = binaryString;
+        }
+    }
+}

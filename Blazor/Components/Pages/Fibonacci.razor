@@ -1,0 +1,48 @@
+﻿@using System.Numerics;
+@page "/Fibonacci"
+@rendermode InteractiveServer
+<h3>Fibonacci</h3>
+
+<div class="fibonacci">
+    <div>
+        <label for="limit">Предел для чисел Фибоначчи:</label>
+        <input type="number" id="limit" @bind="limit" class="form-control" />
+
+        <button @onclick="Calculate" class="btn btn-primary">Вычислить</button>
+    </div>
+    <div id="fibonacci-result">Числа до @limit = @result</div>
+</div>
+
+@code
+{
+    int limit = 0;
+    string result = "0";
+
+    void Calculate()
+    {
+        BigInteger a = 0;
+        BigInteger b = 1;
+        string tempResult = "0";
+
+        if (limit < 0)
+        {
+            result = "Введите положительное число";
+            return;
+        }
+
+        if (limit == 0)
+        {
+            result = "0";
+            return;
+        }
+
+        while (b <= limit)
+        {
+            tempResult += ", " + b;
+            BigInteger next = a + b;
+            a = b;
+            b = next;
+        }
+        result = tempResult;
+    }
+}

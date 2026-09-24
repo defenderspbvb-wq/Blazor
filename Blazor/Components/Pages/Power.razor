@@ -1,0 +1,56 @@
+﻿@using System.Numerics;
+@page "/Power"
+@rendermode InteractiveServer
+
+<h3>Power</h3>
+
+<div class="power">
+    <div>
+        <label for="number">Число для возведения в степень:</label>
+        <input type="number" id="number" @bind="number" class="form-control" />
+        <label for="degree">Степень:</label>
+        <input type="number" id="degree" @bind="degree" class="form-control" />
+
+        <button @onclick="Calculate" class="btn btn-primary">Вычислить</button>
+    </div>
+    <div id="power-result">@number^@degree = @result</div>
+</div>
+
+@code
+{
+    double number = 0; 
+    int degree = 0;
+    double result = 1; 
+
+    void Calculate()
+    {
+        double tempResult = 1;
+        int absDegree = degree < 0 ? -degree : degree;
+
+        if (number == 0 && degree < 0)
+        {
+            result = double.NaN; 
+            return;
+        }
+
+        if (degree == 0)
+        {
+            result = 1;
+            return;
+        }     
+
+        for (int i = 1; i <= absDegree; i++)
+        {
+            tempResult *= number;
+        }
+
+        if (degree < 0)
+        {
+            result = 1.0 / tempResult;
+        }
+        else
+        {
+            result = tempResult;
+        }
+    }
+}

@@ -1,18 +1,33 @@
-﻿@page "/Factorial"
+﻿@* @page задает относительный URL-адрес (маршрут), по которому будет доступна эта страница в браузере (например, https://ваш-сайт/Factorial) *@
+@page "/Factorial"
+
+@* @rendermode включает интерактивный режим работы на стороне сервера. Это позволяет Blazor мгновенно обрабатывать клики и ввод данных без перезагрузки всей страницы *@
 @rendermode InteractiveServer
+
+@* @using подключает пространство имен System.Numerics. Оно необходимо для работы со специальными типами данных, такими как BigInteger (для хранения очень больших чисел, которые получаются при расчете факториала) *@
 @using System.Numerics;
+
+@* Стандартный HTML-заголовок третьего уровня, который выводится на странице *@
 <h3>Factorial</h3>
 
+@* Контейнер-обертка для стилизации всего блока с вычислением факториала *@
 <div class="factorial">
     <div>
+        @* Текстовая метка (label) для поля ввода, помогающая пользователю понять, что нужно ввести *@
         <label for="number">Число для вычисления Факториала:</label>
-        <input type="number"
-            id="number"
-            @bind="number"
-            @bind:after="Calculate"
-            class="form-control"
-            />
+        
+        @* 
+           Поле ввода (input) числового типа.
+           @bind="number" связывает значение в поле с переменной "number" в коде C# (двустороннее связывание).
+           @bind:after="Calculate" указывает автоматически вызывать метод "Calculate" сразу после того, как пользователь изменит число в поле ввода.
+           class="form-control" — стандартный класс Bootstrap для красивого оформления поля.
+        *@
+        <input type="number" id="number" @bind="number" @bind:after="Calculate" class="form-control" />
+        
+        @* Кнопка, которая при нажатии (@onclick) принудительно запускает метод "Calculate" в коде C#. class="btn btn-primary" задает синий цвет кнопки из Bootstrap *@
         <button @onclick="Calculate" class="btn btn-primary">Вычислить</button>
     </div>
-        <div id="factorial-result">@number! = @factorial</div>
+    
+    @* Блок для вывода результата. Символ '@' перед именами переменных заставляет Blazor подставлять их текущие значения прямо в HTML-код в реальном времени *@
+    <div id="factorial-result">@number! = @factorial</div>
 </div>

@@ -37,12 +37,53 @@
 .bi-house-door-fill-nav-menu {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='white' class='bi bi-house-door-fill' viewBox='0 0 16 16'%3E%3Cpath d='M6.5 14.5v-3.505c0-.245.25-.495.5-.495h2c.25 0 .5.25.5.5v3.5a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5Z'/%3E%3C/svg%3E");
 }
+
 .factorial-nav-menu {
-    background-image: url('data:image/svg+xml, <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="red" stroke="red" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M3 19a2 2 0 0 0 2 2c2 0 2 -4 3 -9s1 -9 3 -9a2 2 0 0 1 2 2" /> <path d="M5 12h6" /> <path d="M15 12l6 6" /> <path d="M15 18l6 -6" /> </svg>');
+    background-image: url('data:image/svg+xml;utf8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="%23ffffff" stroke="%23ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"%3E%3Cpath d="M3 19a2 2 0 0 0 2 2c2 0 2 -4 3 -9s1 -9 3 -9a2 2 0 0 1 2 2"/%3E%3Cpath d="M5 12h6"/%3E%3Cpath d="M15 12l6 6"/%3E%3Cpath d="M15 18l6 -6"/%3E%3C/svg%3E');
+    width: 2rem !important;
+    height: 2rem !important;
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    background-position: center;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 0.5rem;
 }
 
 .bitcoin-nav-menu {
-    background-image: url('data:image/svg+xml, <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><path d="M63.043 39.76C58.766 56.866 41.424 67.32 24.24 63.043 7.134 58.766-3.32 41.424.957 24.24 5.234 7.134 22.576-3.32 39.76.957 56.866 5.234 67.32 22.576 63.043 39.76z" fill="orange"/><path d="M46.096 27.407c.634-4.276-2.613-6.573-7.048-8.077l1.425-5.78-3.484-.87-1.425 5.623c-.95-.238-1.9-.475-2.85-.634l1.425-5.623-3.484-.87-1.425 5.78c-.792-.158-1.505-.317-2.217-.554l-4.83-1.188-.95 3.722 2.534.634c1.425.317 1.663 1.267 1.663 2.06l-1.666 6.57c.08 0 .238.08.396.08-.08 0-.238-.08-.396-.08l-2.297 9.186c-.158.396-.634 1.1-1.584.87 0 .08-2.534-.634-2.534-.634l-1.742 4.04 4.593 1.1c.87.238 1.663.475 2.534.634l-1.425 5.86 3.484.87 1.425-5.78L29 45.07l-1.425 5.78 3.484.87 1.425-5.86c6.018 1.1 10.453.713 12.354-4.75 1.505-4.355-.08-6.9-3.247-8.553 2.376-.475 4.04-1.98 4.514-5.147zM38.098 38.73c-1.1 4.355-8.394 1.98-10.77 1.425l1.9-7.76c2.376.554 9.978 1.742 8.87 6.335zm1.1-11.324c-.95 3.96-7.127 1.98-9.107 1.425l1.742-7.048c1.98.554 8.394 1.425 7.365 5.623z" fill="fff"/></svg>');
+    background-image: url('data:image/svg+xml;utf8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"%3E%3Cpath d="M46.096 27.407c.634-4.276-2.613-6.573-7.048-8.077l1.425-5.78-3.484-.87-1.425 5.623c-.95-.238-1.9-.475-2.85-.634l1.425-5.623-3.484-.87-1.425 5.78c-.792-.158-1.505-.317-2.217-.554l-4.83-1.188-.95 3.722 2.534.634c1.425.317 1.663 1.267 1.663 2.06l-1.666 6.57c.08 0 .238.08.396.08-.08 0-.238-.08-.396-.08l-2.297 9.186c-.158.396-.634 1.1-1.584.87 0 .08-2.534-.634-2.534-.634l-1.742 4.04 4.593 1.1c.87.238 1.663.475 2.534.634l-1.425 5.86 3.484.87 1.425-5.78L29 45.07l-1.425 5.78 3.484.87 1.425-5.86c6.018 1.1 10.453.713 12.354-4.75 1.505-4.355-.08-6.9-3.247-8.553 2.376-.475 4.04-1.98 4.514-5.147zM38.098 38.73c-1.1 4.355-8.394 1.98-10.77 1.425l1.9-7.76c2.376.554 9.978 1.742 8.87 6.335zm1.1-11.324c-.95 3.96-7.127 1.98-9.107 1.425l1.742-7.048c1.98.554 8.394 1.425 7.365 5.623z" fill="%23ffffff"/%3E%3C/svg%3E');
+    width: 2rem !important;
+    height: 2rem !important;
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    background-position: center;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 0.5rem;
+}
+
+.bi-Power-nav-menu {
+    background-image: url('data:image/svg+xml;utf8,%3Csvg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 436.544 436.544" width="24" height="24"%3E%3Cg%3E%3Cpath fill="%23ffffff" d="M165.304,284.075l52.534-76.223h35.689v-47.967h-73.374l-39.971,65.096l-7.137,11.991c-1.521,2.279-2.57,4.285-3.14,5.996h-0.856c-0.571-2.279-1.615-4.285-3.14-5.996c-3.999-7.234-6.189-11.231-6.567-11.991l-39.687-65.096H0.859v47.967h39.112l52.819,77.661l-56.243,83.083H0v47.675h73.66l44.252-71.376c2.856-4.569,5.236-8.758,7.139-12.563l2.568-5.995h0.859c0.571,2.279,1.619,4.288,3.14,5.995l6.855,11.995l45.395,71.944h70.81v-47.675h-31.132L165.304,284.075z"/%3E%3Cpath fill="%23ffffff" d="M400.571,174.734v22.839h-66.239c0.567-6.28,3.47-12.275,8.706-17.987c5.235-5.708,11.464-10.607,18.698-14.7c7.231-4.093,15.037-8.894,23.414-14.417c8.378-5.521,16.133-11.091,23.271-16.706c7.139-5.612,13.038-12.891,17.699-21.838c4.661-8.945,6.995-18.751,6.995-29.408c0-18.846-6.476-33.927-19.418-45.253c-12.933-11.326-29.872-16.989-50.819-16.989c-19.984,0-37.873,6.189-53.662,18.558c-7.054,5.52-13.049,11.803-17.997,18.843l29.988,26.269c4.185-5.14,7.61-8.757,10.29-10.849c8.754-7.426,17.98-11.137,27.682-11.137c7.807,0,14.514,2.331,20.13,6.995c5.615,4.665,8.408,10.614,8.408,17.843c0,6.283-2.472,12.371-7.42,18.276c-4.938,5.896-11.136,11.038-18.562,15.415c-7.409,4.375-15.406,9.563-23.982,15.559c-8.562,5.996-16.557,12.181-23.982,18.555c-7.419,6.377-13.606,14.609-18.555,24.698c-4.949,10.088-7.427,21.222-7.427,33.404c0,3.424,0.384,7.81,1.144,13.134l0.855,7.7h146.756v-58.803H400.571z"/%3E%3C/g%3E%3C/svg%3E');
+    width: 2rem !important;
+    height: 2rem !important;
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    background-position: center;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 0.5rem;
+}
+
+.bi-Fibonacci-nav-menu {
+    background-image: url('data:image/svg+xml;utf8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"%3E%3Cpath d="M2 9l3 5.063"/%3E%3Cpath d="M8 9l-4.8 9"/%3E%3Cpath d="M16 9l3 5.063"/%3E%3Cpath d="M22 9l-4.8 9"/%3E%3Cpath d="M10 12h4"/%3E%3Cpath d="M12 10v4"/%3E%3C/svg%3E');
+    width: 2rem !important;
+    height: 2rem !important;
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    background-position: center;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 0.5rem;
 }
 
 .bi-plus-square-fill-nav-menu {

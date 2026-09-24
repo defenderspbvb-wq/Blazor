@@ -1,0 +1,50 @@
+﻿@page "/Dec2Hex"
+@rendermode InteractiveServer
+<h3>Decimal to Hexadecimal</h3>
+
+<div class="dec2hex">
+    <div>
+        <label for="number">Десятичное число:</label>
+        <input type="number" id="number" @bind="number" class="form-control" />
+
+        <button @onclick="Calculate" class="btn btn-primary">Перевести</button>
+    </div>
+
+    <div id="convert-result">@number в 16-ичной = @result</div>
+</div>
+
+@code
+{
+    int number = 0;
+    string result = "0";
+
+    void Calculate()
+    {
+        int tempNumber = number < 0 ? -number : number;
+        string hexString = "";
+
+        if (number == 0)
+        {
+            result = "0";
+            return;
+        }
+
+        string hexDigits = "0123456789ABCDEF";
+        
+        while (tempNumber > 0)
+        {
+            int remainder = tempNumber % 16;
+            hexString = hexDigits[remainder] + hexString;
+            tempNumber /= 16;
+        }
+
+        if (number < 0)
+        {
+            result = "-" + hexString;
+        }
+        else
+        {
+            result = hexString;
+        }
+    }
+}
