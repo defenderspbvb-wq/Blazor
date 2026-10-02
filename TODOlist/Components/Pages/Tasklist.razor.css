@@ -1,14 +1,45 @@
-﻿ul
-{
-    list-style:none;
+﻿.task-title {
+    text-align: center;
+    margin-top: 15px;
+    margin-bottom: 15px;
 }
-input[type=checkbox]:checked+lable
+
+.task-list
 {
-    color:gray;
-    text-decoration:line-through;
+    list-style: none;
+    padding-left: 0;
 }
-.statistics
+
+.statistics {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.task-list li
 {
-    display:flex;
-    justify-content:space-between;
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 5px 10px;
+    border-radius: 4px;
+    background-color: #f8f9fa;
+}
+
+.task-list input[type="checkbox"]
+{
+    margin-right: 10px;
+}
+
+.task-time
+{
+    color: #6c757d;
+    margin-left: auto;
+    margin-right: 20px;
+}
+
+.action-buttons
+{
+    display: flex;
+    gap: 8px;
 }

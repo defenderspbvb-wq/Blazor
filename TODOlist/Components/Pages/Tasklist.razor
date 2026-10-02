@@ -2,46 +2,88 @@
 @rendermode InteractiveServer
 
 <div class="controls">
-    <input type="text" placeholder="Новая задача" class="form-control" @bind="description"/>
+    <input type="text" placeholder="Новая задача" class="form-control" @bind="description" />
     <button class="btn btn-primary" @onclick="AddTask">Добавить</button>
 </div>
 
 <hr />
 
-<h3>Tasklist</h3>
+<h3 class="task-title">Tasklist</h3>
+
 <div class="statistics">
-    <h5>Всего:  @tasklist.Count</h5>
-    <h5>Выполнено:  @tasklist.Where(t=>t.DONE==true).ToList().Count</h5>
-    <h5>Осталось:  @tasklist.Where(t=>t.DONE==false).ToList().Count</h5>
+    <h5>Всего: @tasklist.Count</h5>
+    <h5>Выполнено: @tasklist.Count(t => t.DONE)</h5>
+    <h5>Осталось: @tasklist.Count(t => !t.DONE)</h5>
 </div>
 
 <hr />
 
-<ul>
+<ul class="task-list">
     @foreach (TODO task in tasklist)
     {
         <li>
-            <input type="checkbox" id="@task.Description" @bind="task.DONE"/>
-            <lable for="@task.Description">@task.Description</lable>
+            @* Чекбокс: id связывается с описанием задачи, а @bind привязывает состояние (нажато/нет) к свойству task.DONE *@
+            <input type="checkbox" id="@task.Description" @bind="task.DONE" />
+            
+            @* Текстовая метка: атрибут 'for' связывает её с чекбоксом по его id. Внутри выводится сам текст задачи *@
+            <label for="@task.Description">@task.Description</label>
+            
+            @* Тег для вывода времени: применяет CSS-класс 'task-time' *@
+            <span class="task-time">
+                @* Выводит время создания задачи, форматируя его в вид "Часы:Минуты" (например, [14:30]) *@
+                [@task.CreatedAt.ToString("HH:mm")]
+            </span>
+            
+            @* Кнопка удаления: использует лямбда-выражение () => ... чтобы передать текущий объект 'task' в метод 'RemoveTask' *@
+            <button class="btn btn-primary btn-sm" @onclick="() => RemoveTask(task)">Удалить</button>
         </li>
     }
 </ul>
 
+@* Блок выполнится, только если в списке 'tasklist' есть хотя бы один элемент *@
+@if (tasklist.Any())
+{
+    <hr />
+    
+    <div class="action-buttons">
+        @* Кнопка появится, только если в списке есть хотя бы одна задача со статусом DONE = true *@
+        @if (tasklist.Any(t => t.DONE))
+        {
+            <button class="btn btn-danger" @onclick="RemoveDONETasks">Удалить выполненные</button>
+        }
+        <button class="btn btn-outline-danger" @onclick="RemoveAllTask">Очистить весь список</button>
+    </div>
+}
+
 @code
 {
-    // List<TODO> tasklist = [];
-    List<TODO> tasklist =
-    [
-        new TODO { Description = "Полить цветы"},
-        new TODO { Description = "Покормить кота"},
-        new TODO { Description = "Помыть посуду"},
+    string description = "";
+
+    List<TODO> tasklist = [
+        new TODO { Description = "Полить цветы" },
+        new TODO { Description = "Покормить кота" },
+        new TODO { Description = "Помыть посуду" },
+        new TODO { Description = "Пынести мусор" }
     ];
-    string description;
+
     void AddTask()
     {
-        if (string.IsNullOrWhiteSpace(description) ) return;
-        if (tasklist.Contains(new TODO { Description = description })) return;
+        @* Проверка: если строка пустая, состоит только из пробелов или null, прерываем выполнение метода *@
+        if (string.IsNullOrWhiteSpace(description)) return;
+        
+        @* Проверка на дубликаты: если задача с таким текстом (без учета регистра букв) уже есть, прерываем работу *@
+        if (tasklist.Any(t => t.Description.Equals(description, StringComparison.OrdinalIgnoreCase))) return;
+        
+        @* Создаем новый объект класса TODO, передаем туда введенный текст и добавляем его в общую коллекцию *@
         tasklist.Add(new TODO { Description = description });
+        
+        @* Очищаем переменную 'description', что автоматически очищает и текстовое поле <input> на экране *@
         description = "";
     }
+    
+    void RemoveTask(TODO task) => tasklist.Remove(task);
+    
+    void RemoveDONETasks() => tasklist.RemoveAll(t => t.DONE);
+    
+    void RemoveAllTask() => tasklist.Clear();
 }

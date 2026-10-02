@@ -4,7 +4,7 @@
     {
         public string Description { get; set; }
         public bool DONE { get; set; }
-
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
         public override bool Equals(object? other)
         {
             return this.Description.Equals((other as TODO).Description);
