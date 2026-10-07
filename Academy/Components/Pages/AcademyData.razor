@@ -1,0 +1,86 @@
+﻿@page "/academy"
+@rendermode InteractiveServer
+@using Microsoft.EntityFrameworkCore
+@using Academy.Models
+@implements IAsyncDisposable
+@inject IDbContextFactory<Vpu521ImportContext> DbFactory
+
+<PageTitle>Академия - Данные</PageTitle>
+
+<div class="container mt-4">
+    <h2 class="mb-4 text-center text-secondary">Данные из базы VPU_521_Import</h2>
+
+    @if (context == null)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-2">Загрузка таблиц...</p>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-dark text-white fw-bold">Направления обучения (Directions)</div>
+                    <ul class="list-group list-group-flush" style="max-height: 250px; overflow-y: auto;">
+                        @foreach (var item in context.Directions)
+                        {
+                            <li class="list-group-item">@item.DirectionName</li>
+                        }
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-secondary text-white fw-bold">Группы (Groups)</div>
+                    <ul class="list-group list-group-flush" style="max-height: 250px; overflow-y: auto;">
+                        @foreach (var item in context.Groups)
+                        {
+                            <li class="list-group-item">@item.GroupName</li>
+                        }
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-info text-white fw-bold">Преподаватели (Teachers)</div>
+                    <ul class="list-group list-group-flush" style="max-height: 250px; overflow-y: auto;">
+                        @foreach (var item in context.Teachers)
+                        {
+                            <li class="list-group-item">@item.FirstName @item.LastName</li>
+                        }
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-primary text-white fw-bold">Студенты (Students)</div>
+                    <ul class="list-group list-group-flush" style="max-height: 250px; overflow-y: auto;">
+                        @foreach (var item in context.Students)
+                        {
+                            <li class="list-group-item">@item.FirstName @item.LastName</li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private Vpu521ImportContext? context;
+
+    protected override async Task OnInitializedAsync()
+    {
+        context = await DbFactory.CreateDbContextAsync();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (context != null) await context.DisposeAsync();
+    }
+}
