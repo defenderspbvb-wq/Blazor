@@ -1,0 +1,138 @@
+﻿@* 1. Указываем адрес страницы на сайте. Доступ будет по ссылке /uni *@
+@page "/uni"
+
+@* 2. Включаем интерактивный серверный режим для Blazor Server *@
+@rendermode InteractiveServer
+
+@* 3. Подключаем библиотеки Entity Framework Core и наши ручные модели из папки Models *@
+@using Microsoft.EntityFrameworkCore
+@using AcademyTest.Models
+
+@* 4. Говорим системе правильно уничтожать контексты при закрытии страницы *@
+@implements IAsyncDisposable
+
+@* 5. Внедряем нашу фабрику контекстов, настроенную в Program.cs *@
+@inject IDbContextFactory<MiniUniversityDbContext> DbFactory
+
+<PageTitle>Мини-Университет</PageTitle>
+
+<div class="container mt-4">
+    <h2 class="mb-4 text-center text-primary">Электронный ведомости «MiniUniversityDB»</h2>
+
+    @* До тех пор, пока база данных не вернула ответ, показываем анимацию загрузки *@
+    @if (coursesList == null)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-2 text-muted">Запрос к SQL Server...</p>
+        </div>
+    }
+    else
+    {
+        @* Цикл №1: Перебираем все Курсы (Courses) *@
+        @foreach (var course in coursesList)
+        {
+            <div class="card shadow mb-5 border-0">
+                <div class="card-header bg-dark text-white p-3">
+                    <h4 class="mb-0">📚 Курс: @course.CourseName</h4>
+                </div>
+                <div class="card-body bg-light">
+
+                    @* Проверяем, есть ли группы на этом курсе *@
+                    @if (!course.Groups.Any())
+                    {
+                        <p class="text-muted mb-0">На этом курсе пока нет сформированных групп.</p>
+                    }
+                    else
+                    {
+                        @* Цикл №2: Благодаря навигационному свойству course.Groups, *@
+                        @* мы заходим внутрь текущего курса и перебираем его Группы *@
+                        @foreach (var group in course.Groups)
+                        {
+                            <div class="card m-3 border-secondary shadow-sm">
+                                <div class="card-header bg-secondary text-white fw-bold">
+                                    👥 Группа: @group.GroupName
+                                </div>
+                                <div class="card-body p-0">
+                                    <table class="table table-hover table-striped mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Студент (Берем через Student навигацию)</th>
+                                                <th class="text-center" style="width: 150px;">Оценка (Grade)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @* Проверяем, записан ли кто-то в ведомость группы *@
+                                            @if (!group.Enrollments.Any())
+                                            {
+                                                <tr>
+                                                    <td colspan="2" class="text-muted text-center py-3">В этой группе пока нет студентов.</td>
+                                                </tr>
+                                            }
+                                            else
+                                            {
+                                                @* Цикл №3: Заходим в ведомость зачислений текущей группы *@
+                                                @foreach (var enrollment in group.Enrollments)
+                                                {
+                                                    <tr>
+                                                        <td>
+                                                            @* МАГИЯ НАВИГАЦИИ: Мы находимся внутри записи Enrollment, *@
+                                                            @* но через свойство .Student мгновенно пишем имя человека! *@
+                                                            @enrollment.Student.FirstName @enrollment.Student.LastName
+                                                        </td>
+                                                        <td class="text-center fw-bold text-success">
+                                                            @* Проверяем оценку на null (если в базе NULL, выведем прочерк) *@
+                                                            @(enrollment.Grade.HasValue ? enrollment.Grade.Value.ToString() : "—")
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        }
+                    }
+
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    // Наш контекст (остается null, так как мы пишем логику через фабрику локально)
+    private MiniUniversityDbContext? context;
+
+    // Чистый C#-список для хранения курсов со всей их внутренней иерархией данных
+    private List<Course>? coursesList;
+
+    // Этот метод запускается средой Blazor автоматически в момент открытия страницы
+    protected override async Task OnInitializedAsync()
+    {
+        // Шаг 1. Просим фабрику выдать нам персональное асинхронное подключение к SQL Server
+        context = await DbFactory.CreateDbContextAsync();
+
+        // Шаг 2. Выполняем ЖАДНУЮ ЗАГРУЗКУ (Eager Loading) с цепочкой связей:
+        // 1. Сначала берем таблицу Курсов (context.Courses)
+        // 2. .Include(c => c.Groups) — командуем EF Core: "Сделай JOIN и подтяни Группы для каждого курса!"
+        // 3. .ThenInclude(g => g.Enrollments) — "Зайди внутрь Групп и подтяни их Зачисления/Оценки!"
+        // 4. .ThenInclude(e => e.Student) — "Зайди внутрь Зачислений и подтяни личные данные Студентов!"
+        coursesList = await context.Courses
+            .Include(c => c.Groups)
+                .ThenInclude(g => g.Enrollments)
+                    .ThenInclude(e => e.Student)
+                    .AsSplitQuery() // Прикажет EF Core сделать 3 маленьких быстрых SELECT запроса вместо одного гигантского
+            .ToListAsync(); // Асинхронно отправляем скомпилированный SQL-пакет в базу
+    }
+
+    // Метод срабатывает автоматически, когда пользователь закрывает вкладку или переходит на другую страницу логов
+    public async ValueTask DisposeAsync()
+    {
+        if (context != null)
+        {
+            // Корректно закрываем сессию с MS SQL Server, высвобождая ресурсы оперативной памяти
+            await context.DisposeAsync();
+        }
+    }
+}
