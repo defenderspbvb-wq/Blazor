@@ -1,35 +1,65 @@
-﻿@* 1. Указываем адрес страницы на сайте. Доступ будет по ссылке /uni *@
-@page "/uni"
-
-@* 2. Включаем интерактивный серверный режим для Blazor Server *@
+﻿@page "/uni"
 @rendermode InteractiveServer
-
-@* 3. Подключаем библиотеки Entity Framework Core и наши ручные модели из папки Models *@
 @using Microsoft.EntityFrameworkCore
 @using AcademyTest.Models
-
-@* 4. Говорим системе правильно уничтожать контексты при закрытии страницы *@
 @implements IAsyncDisposable
-
-@* 5. Внедряем нашу фабрику контекстов, настроенную в Program.cs *@
 @inject IDbContextFactory<MiniUniversityDbContext> DbFactory
 
-<PageTitle>Мини-Университет</PageTitle>
+<PageTitle>CRUD - Университет</PageTitle>
 
 <div class="container mt-4">
-    <h2 class="mb-4 text-center text-primary">Электронный ведомости «MiniUniversityDB»</h2>
+    <h2 class="mb-4 text-center text-primary">Управление ведомостями «MiniUniversityDB» (CRUD)</h2>
 
-    @* До тех пор, пока база данных не вернула ответ, показываем анимацию загрузки *@
+    <!-- ========================================================================= -->
+    <!-- 1. CREATE (СОЗДАНИЕ): ФОРМА ЗАЧИСЛЕНИЯ СТУДЕНТА                           -->
+    <!-- ========================================================================= -->
+    <div class="card shadow mb-4 border-primary">
+        <div class="card-header bg-primary text-white fw-bold">
+            👤 [CREATE] Зачисление нового студента
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <input type="text" class="form-control" placeholder="Имя" @bind="newFirstName" />
+                </div>
+                <div class="col-md-3">
+                    <input type="text" class="form-control" placeholder="Фамилия" @bind="newLastName" />
+                </div>
+                <div class="col-md-4">
+                    <select class="form-select" @bind="selectedGroupId">
+                        <option value="0">-- Выберите группу --</option>
+                        @if (allGroups != null)
+                        {
+                            @foreach (var g in allGroups)
+                            {
+                                <option value="@g.GroupId">@g.GroupName</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-success w-100" @onclick="CreateStudent">Добавить</button>
+                </div>
+            </div>
+            @if (!string.IsNullOrEmpty(statusMessage))
+            {
+                <div class="alert alert-info mt-3 mb-0 py-2">@statusMessage</div>
+            }
+        </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- 2. READ / UPDATE / DELETE: ТАБЛИЦЫ ВЕДОМОСТЕЙ                             -->
+    <!-- ========================================================================= -->
     @if (coursesList == null)
     {
         <div class="text-center py-5">
             <div class="spinner-border text-primary" role="status"></div>
-            <p class="mt-2 text-muted">Запрос к SQL Server...</p>
+            <p class="mt-2 text-muted">Загрузка данных...</p>
         </div>
     }
     else
     {
-        @* Цикл №1: Перебираем все Курсы (Courses) *@
         @foreach (var course in coursesList)
         {
             <div class="card shadow mb-5 border-0">
@@ -37,16 +67,12 @@
                     <h4 class="mb-0">📚 Курс: @course.CourseName</h4>
                 </div>
                 <div class="card-body bg-light">
-
-                    @* Проверяем, есть ли группы на этом курсе *@
                     @if (!course.Groups.Any())
                     {
-                        <p class="text-muted mb-0">На этом курсе пока нет сформированных групп.</p>
+                        <p class="text-muted mb-0">Групп пока нет.</p>
                     }
                     else
                     {
-                        @* Цикл №2: Благодаря навигационному свойству course.Groups, *@
-                        @* мы заходим внутрь текущего курса и перебираем его Группы *@
                         @foreach (var group in course.Groups)
                         {
                             <div class="card m-3 border-secondary shadow-sm">
@@ -57,32 +83,39 @@
                                     <table class="table table-hover table-striped mb-0">
                                         <thead class="table-light">
                                             <tr>
-                                                <th>Студент (Берем через Student навигацию)</th>
-                                                <th class="text-center" style="width: 150px;">Оценка (Grade)</th>
+                                                <th>Студент</th>
+                                                <th class="text-center" style="width: 180px;">Оценка [UPDATE]</th>
+                                                <th class="text-center" style="width: 120px;">Действие [DELETE]</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @* Проверяем, записан ли кто-то в ведомость группы *@
                                             @if (!group.Enrollments.Any())
                                             {
                                                 <tr>
-                                                    <td colspan="2" class="text-muted text-center py-3">В этой группе пока нет студентов.</td>
+                                                    <td colspan="3" class="text-muted text-center py-3">Студентов нет.</td>
                                                 </tr>
                                             }
                                             else
                                             {
-                                                @* Цикл №3: Заходим в ведомость зачислений текущей группы *@
                                                 @foreach (var enrollment in group.Enrollments)
                                                 {
                                                     <tr>
-                                                        <td>
-                                                            @* МАГИЯ НАВИГАЦИИ: Мы находимся внутри записи Enrollment, *@
-                                                            @* но через свойство .Student мгновенно пишем имя человека! *@
+                                                        <td class="align-middle">
                                                             @enrollment.Student.FirstName @enrollment.Student.LastName
                                                         </td>
-                                                        <td class="text-center fw-bold text-success">
-                                                            @* Проверяем оценку на null (если в базе NULL, выведем прочерк) *@
-                                                            @(enrollment.Grade.HasValue ? enrollment.Grade.Value.ToString() : "—")
+                                                        <td class="text-center align-middle">
+                                                            <!-- UPDATE: При изменении числа в инпуте сразу вызывается UpdateGrade -->
+                                                            <input type="number" class="form-control form-control-sm d-inline-block text-center fw-bold" 
+                                                                   style="width: 70px;" min="1" max="5"
+                                                                   value="@enrollment.Grade" 
+                                                                   @onchange="(e) => UpdateGrade(enrollment, e.Value)" />
+                                                        </td>
+                                                        <td class="text-center align-middle">
+                                                            <!-- DELETE: Кнопка удаления записи из журнала -->
+                                                            <button class="btn btn-danger btn-sm" 
+                                                                    @onclick="() => DeleteEnrollment(enrollment)">
+                                                                🗑 Отчислить
+                                                            </button>
                                                         </td>
                                                     </tr>
                                                 }
@@ -93,7 +126,6 @@
                             </div>
                         }
                     }
-
                 </div>
             </div>
         }
@@ -101,38 +133,114 @@
 </div>
 
 @code {
-    // Наш контекст (остается null, так как мы пишем логику через фабрику локально)
     private MiniUniversityDbContext? context;
-
-    // Чистый C#-список для хранения курсов со всей их внутренней иерархией данных
     private List<Course>? coursesList;
+    private List<Group>? allGroups;
 
-    // Этот метод запускается средой Blazor автоматически в момент открытия страницы
+    // Переменные формы создания (Create)
+    private string newFirstName = "";
+    private string newLastName = "";
+    private int selectedGroupId = 0;
+    private string statusMessage = "";
+
     protected override async Task OnInitializedAsync()
     {
-        // Шаг 1. Просим фабрику выдать нам персональное асинхронное подключение к SQL Server
+        // Порождаем контекст из фабрики
         context = await DbFactory.CreateDbContextAsync();
+        await ReadAllData();
+    }
 
-        // Шаг 2. Выполняем ЖАДНУЮ ЗАГРУЗКУ (Eager Loading) с цепочкой связей:
-        // 1. Сначала берем таблицу Курсов (context.Courses)
-        // 2. .Include(c => c.Groups) — командуем EF Core: "Сделай JOIN и подтяни Группы для каждого курса!"
-        // 3. .ThenInclude(g => g.Enrollments) — "Зайди внутрь Групп и подтяни их Зачисления/Оценки!"
-        // 4. .ThenInclude(e => e.Student) — "Зайди внутрь Зачислений и подтяни личные данные Студентов!"
+    // =========================================================================
+    // [READ] — Чтение данных (Жадная загрузка разделенными запросами)
+    // =========================================================================
+    private async Task ReadAllData()
+    {
+        if (context == null) return;
+
         coursesList = await context.Courses
             .Include(c => c.Groups)
                 .ThenInclude(g => g.Enrollments)
                     .ThenInclude(e => e.Student)
-                    .AsSplitQuery() // Прикажет EF Core сделать 3 маленьких быстрых SELECT запроса вместо одного гигантского
-            .ToListAsync(); // Асинхронно отправляем скомпилированный SQL-пакет в базу
+            .AsSplitQuery() // Оптимизация разделением запросов
+            .ToListAsync();
+
+        allGroups = await context.Groups.ToListAsync();
     }
 
-    // Метод срабатывает автоматически, когда пользователь закрывает вкладку или переходит на другую страницу логов
+    // =========================================================================
+    // [CREATE] — Создание студента и привязка к группе
+    // =========================================================================
+    private async Task CreateStudent()
+    {
+        if (string.IsNullOrWhiteSpace(newFirstName) || string.IsNullOrWhiteSpace(newLastName) || selectedGroupId == 0)
+        {
+            statusMessage = "Заполните все поля!";
+            return;
+        }
+
+        // Создаем сущность студента
+        var student = new Student { FirstName = newFirstName, LastName = newLastName };
+        context!.Students.Add(student);
+
+        // Создаем сущность связи в журнале
+        var enrollment = new Enrollment { Student = student, GroupId = selectedGroupId, Grade = null };
+        context.Enrollments.Add(enrollment);
+
+        // Фиксируем транзакцию в SQL Server (INSERT INTO...)
+        await context.SaveChangesAsync();
+
+        statusMessage = $"Студент {student.FirstName} успешно зачислен!";
+        newFirstName = ""; newLastName = ""; selectedGroupId = 0;
+        
+        await ReadAllData(); // Обновляем экран
+    }
+
+    // =========================================================================
+    // [UPDATE] — Обновление оценки студента в группе
+    // =========================================================================
+    private async Task UpdateGrade(Enrollment enrollment, object? newValue)
+    {
+        if (context == null) return;
+
+        // Конвертируем введенное пользователем значение в nullable int
+        if (int.TryParse(newValue?.ToString(), out int parsedGrade))
+        {
+            if (parsedGrade >= 1 && parsedGrade <= 5)
+            {
+                // Магия EF Core: мы меняем свойство объекта, фреймворк сам отслеживает 
+                // изменения (Change Tracking) и ставит объекту статус "Modified"
+                enrollment.Grade = parsedGrade;
+            }
+            else
+            {
+                statusMessage = "Оценка должна быть от 1 до 5!";
+                await ReadAllData(); // Сбрасываем некорректный ввод на экране
+                return;
+            }
+        }
+        else
+        {
+            enrollment.Grade = null; // Если поле стерли, ставим NULL в базе данных
+        }
+        // Синхронизируем изменения с базой (Сгенерирует UPDATE Enrollments SET Grade = ... WHERE ...)
+        await context.SaveChangesAsync();
+        statusMessage = "Оценка успешно обновлена!";
+    }
+    // =========================================================================
+    // [DELETE] — Удаление зачисления (отчисление из группы)
+    // =========================================================================
+    private async Task DeleteEnrollment(Enrollment enrollment)
+    {
+        if (context == null) return;
+        // Передаем объект в метод Remove. EF Core ставит ему статус "Deleted"
+        context.Enrollments.Remove(enrollment);
+        // Сохраняем изменения (Сгенерирует DELETE FROM Enrollments WHERE StudentId = ... AND GroupId = ...)
+        await context.SaveChangesAsync();
+        statusMessage = "Запись о зачислении успешно удалена!";
+        await ReadAllData(); // Обновляем списки
+    }
     public async ValueTask DisposeAsync()
     {
-        if (context != null)
-        {
-            // Корректно закрываем сессию с MS SQL Server, высвобождая ресурсы оперативной памяти
-            await context.DisposeAsync();
-        }
+        if (context != null) await context.DisposeAsync();
     }
 }

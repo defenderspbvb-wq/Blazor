@@ -1,0 +1,102 @@
+@page "/directions/edit"
+@using Microsoft.EntityFrameworkCore
+@using Academy2.Models
+@inject IDbContextFactory<Academy2Context> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Edit</PageTitle>
+
+<h1>Edit</h1>
+
+<h2>Direction</h2>
+<hr />
+@if (direction is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <!-- Модель жестко привязана к свойству direction с маленькой буквы -->
+            <EditForm method="post" Model="direction" OnValidSubmit="UpdateDirection" FormName="edit_direction_form" Enhance>
+                <DataAnnotationsValidator />
+                <ValidationSummary role="alert" class="text-danger" />
+                
+                <!-- Скрытое поле для передачи ID направления при POST-запросе -->
+                <input type="hidden" name="direction.direction_id" value="@direction.direction_id" />
+                
+                <div class="mb-3">
+                    <span class="text-danger">*</span>
+                    <label for="direction_name" class="form-label">direction_name:</label>
+                    <InputText id="direction_name" @bind-Value="direction.direction_name" class="form-control" aria-required="true" />
+                    <ValidationMessage For="() => direction.direction_name" class="text-danger" />
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Save</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<div>
+    <a href="/directions">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    // ИСПРАВЛЕНО: возвращаем int, чтобы Blazor мог распарсить значение из URL-строки
+    private int direction_id { get; set; }
+
+    [SupplyParameterFromForm]
+    private Direction? direction { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        
+        // ИСПРАВЛЕНО: приводим int к byte при поиске в базе данных (TINYINT)
+        byte targetId = (byte)direction_id;
+        
+        direction ??= await context.Directions.FirstOrDefaultAsync(m => m.direction_id == targetId);
+
+        if (direction is null)
+        {
+            NavigationManager.NotFound();
+        }
+    }
+
+    private async Task UpdateDirection()
+    {
+        using var context = DbFactory.CreateDbContext();
+        
+        context.Attach(direction!).State = EntityState.Modified;
+
+        try
+        {
+            await context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            // ИСПРАВЛЕНО: приводим к byte для метода проверки существования
+            if (!DirectionExists((byte)direction_id))
+            {
+                NavigationManager.NotFound();
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        NavigationManager.NavigateTo("/directions");
+    }
+
+    // ИСПРАВЛЕНО: метод теперь принимает byte, как и положено для сущности
+    private bool DirectionExists(byte id)
+    {
+        using var context = DbFactory.CreateDbContext();
+        return context.Directions.Any(e => e.direction_id == id);
+    }
+}
+

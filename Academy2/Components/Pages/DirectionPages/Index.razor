@@ -1,0 +1,73 @@
+@page "/directions"
+@rendermode InteractiveServer
+
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using Microsoft.EntityFrameworkCore
+@using Academy2.Models
+@implements IAsyncDisposable
+@inject IDbContextFactory<Academy2Context> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Направления</PageTitle>
+
+<h1>Список направлений</h1>
+
+<div class="controls">
+    <p class="mb-0">
+        <a href="directions/create" class="btn btn-primary">Создать</a>
+    </p>
+
+    <div>
+        <input type="text"
+               class="form-control"
+               placeholder="Поиск направления..."
+               @bind="searchString"
+               @bind:event="oninput"
+               style="width: 250px;" />
+    </div>
+</div>
+
+<div class="grid-container">
+    <QuickGrid Class="table table-striped table-bordered" Items="FilteredDirections" Pagination="pagination">
+        <PropertyColumn Property="direction => direction.direction_id" Sortable="true" Title="ID" />
+        <PropertyColumn Property="direction => direction.direction_name" Sortable="true" Title="Название направления" />
+
+        <TemplateColumn Context="direction" Title="Действия">
+            <a href="@($"directions/edit?direction_id={direction.direction_id}")" class="btn-action btn-action-edit">Edit</a>
+            <a href="@($"directions/details?direction_id={direction.direction_id}")" class="btn-action btn-action-details">Details</a>
+            <a href="@($"directions/delete?direction_id={direction.direction_id}")" class="btn-action btn-action-delete">Delete</a>
+        </TemplateColumn>
+    </QuickGrid>
+</div>
+
+<div class="page-size-chooser mt-3">
+    <Paginator State="pagination" />
+</div>
+
+@code {
+    private Academy2Context context = default!;
+    private string searchString = string.Empty;
+    private PaginationState pagination = new PaginationState { ItemsPerPage = 5 };
+
+    protected override void OnInitialized()
+    {
+        context = DbFactory.CreateDbContext();
+    }
+
+    private IQueryable<Direction> FilteredDirections
+    {
+        get
+        {
+            var result = context.Directions.AsNoTracking();
+
+            if (!string.IsNullOrWhiteSpace(searchString))
+            {
+                result = result.Where(d => d.direction_name.Contains(searchString));
+            }
+
+            return result;
+        }
+    }
+
+    public async ValueTask DisposeAsync() => await context.DisposeAsync();
+}

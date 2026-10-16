@@ -1,0 +1,55 @@
+@page "/directions/create"
+@using Microsoft.EntityFrameworkCore
+@using Academy2.Models
+@inject IDbContextFactory<Academy2Context> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Create</PageTitle>
+
+<h1>Create</h1>
+
+<h2>Direction</h2>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <!-- Указываем строго имя модели direction -->
+        <EditForm method="post" Model="direction" OnValidSubmit="AddDirection" FormName="create_direction_form">
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" role="alert" />
+            
+            <div class="mb-3">
+                <span class="text-danger">*</span>
+                <label for="direction_name" class="form-label">direction_name:</label>
+                <!-- Связываем через @bind-Value к свойству direction.direction_name -->
+                <InputText id="direction_name" @bind-Value="direction.direction_name" class="form-control" aria-required="true" />
+                <ValidationMessage For="() => direction.direction_name" class="text-danger" />
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Create</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/directions">Back to List</a>
+</div>
+
+@code {
+    // ВАЖНО: Имя свойства сделано с маленькой буквы (direction),
+    // чтобы у фреймворка не возникло конфликта с именем класса (Direction)
+    [SupplyParameterFromForm]
+    private Direction direction { get; set; } = default!;
+
+    protected override void OnInitialized()
+    {
+        direction ??= new();
+    }
+
+    private async Task AddDirection()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Directions.Add(direction);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/directions");
+    }
+}

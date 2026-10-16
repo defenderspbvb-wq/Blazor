@@ -1,0 +1,82 @@
+@page "/groups"
+@rendermode InteractiveServer
+
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using Microsoft.EntityFrameworkCore
+@using Academy2.Models
+@implements IAsyncDisposable
+@inject IDbContextFactory<Academy2Context> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Группы</PageTitle>
+
+<h1>Список групп</h1>
+
+<div class="controls mb-3">
+    <p class="mb-0">
+        <a href="groups/create" class="btn btn-primary">Создать группу</a>
+    </p>
+
+    <div>
+        <input type="text"
+               class="form-control"
+               placeholder="Поиск по группам или направлениям..."
+               @bind="searchString"
+               @bind:event="oninput"
+               style="width: 320px;" />
+    </div>
+</div>
+
+<div class="grid-container">
+    <QuickGrid Class="table table-striped table-bordered" Items="FilteredGroups" Pagination="pagination">
+
+        <PropertyColumn Property="group => group.group_name" Sortable="true" Title="Название группы" />
+        <PropertyColumn Property="group => group.Direction != null ? group.Direction.direction_name : string.Empty" Sortable="true" Title="Направление" />
+        <PropertyColumn Property="group => group.learning_days" Sortable="true" Title="Дней в неделю" />
+        <PropertyColumn Property="group => group.start_time" Sortable="true" Title="Время начала" />
+        <PropertyColumn Property="group => group.start_date" Sortable="true" Title="Дата старта" />
+
+        <TemplateColumn Context="group" Title="Действия">
+            <a href="@($"groups/edit?group_id={group.group_id}")" class="btn-action btn-action-edit">Edit</a>
+            <a href="@($"groups/details?group_id={group.group_id}")" class="btn-action btn-action-details">Details</a>
+            <a href="@($"groups/delete?group_id={group.group_id}")" class="btn-action btn-action-delete">Delete</a>
+        </TemplateColumn>
+    </QuickGrid>
+</div>
+
+<div class="page-size-chooser mt-3">
+    <Paginator State="pagination" />
+</div>
+
+@code {
+    private Academy2Context? _context;
+    private string searchString = string.Empty;
+    
+    private PaginationState pagination = new PaginationState { ItemsPerPage = 5 };
+
+    private IQueryable<Group> FilteredGroups
+    {
+        get
+        {
+            _context ??= DbFactory.CreateDbContext();
+
+            var result = _context.Groups.Include(g => g.Direction).AsNoTracking();
+
+            if (!string.IsNullOrWhiteSpace(searchString))
+            {
+                result = result.Where(g => g.group_name.Contains(searchString)
+                                        || (g.Direction != null && g.Direction.direction_name.Contains(searchString)));
+            }
+
+            return result;
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_context is not null)
+        {
+            await _context.DisposeAsync();
+        }
+    }
+}
