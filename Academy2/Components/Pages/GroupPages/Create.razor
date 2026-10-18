@@ -41,14 +41,17 @@
             
             <div class="mb-3">
                 <label for="learning_days" class="form-label">learning_days:</label>
-                <!-- ИСПРАВЛЕНО: input type="number" вместо InputNumber для поддержки типа byte? -->
-                <input type="number" id="learning_days" @bind="Group.learning_days" class="form-control" />
+                <input type="number"
+                       id="learning_days"
+                       name="Group.learning_days"
+                       value="@Group.learning_days"
+                       class="form-control" />
                 <ValidationMessage For="() => Group.learning_days" class="text-danger" />
             </div>
             
             <div class="mb-3">
                 <label for="start_time" class="form-label">start_time:</label>
-                <InputDate id="start_time" @bind-Value="Group.start_time" class="form-control" />
+                <InputDate Type="InputDateType.Time" id="start_time" @bind-Value="Group.start_time" class="form-control" />
                 <ValidationMessage For="() => Group.start_time" class="text-danger" />
             </div>
             
