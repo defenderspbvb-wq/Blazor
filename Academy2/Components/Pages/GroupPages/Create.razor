@@ -1,4 +1,5 @@
 @page "/groups/create"
+@rendermode InteractiveServer
 @using Microsoft.EntityFrameworkCore
 @using Academy2.Models
 @inject IDbContextFactory<Academy2Context> DbFactory
@@ -25,7 +26,6 @@
             
             <div class="mb-3">
                 <label for="direction" class="form-label">direction (Направление):</label>
-                <!-- ВАРИАНТ 2: Выпадающий список вместо InputNumber -->
                 <InputSelect id="direction" @bind-Value="Group.direction" class="form-control">
                     <option value="0">-- Выберите направление --</option>
                     @if (allDirections != null)
@@ -39,7 +39,7 @@
                 <ValidationMessage For="() => Group.direction" class="text-danger" />
             </div>
             
-            <div class="mb-3">
+            @* <div class="mb-3">
                 <label for="learning_days" class="form-label">learning_days:</label>
                 <input type="number"
                        id="learning_days"
@@ -47,7 +47,9 @@
                        value="@Group.learning_days"
                        class="form-control" />
                 <ValidationMessage For="() => Group.learning_days" class="text-danger" />
-            </div>
+            </div> *@
+
+            <LearningDays Group="Group" />
             
             <div class="mb-3">
                 <label for="start_time" class="form-label">start_time:</label>
