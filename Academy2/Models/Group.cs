@@ -13,7 +13,7 @@ namespace Academy2.Models
         [Required]
         [StringLength(10, MinimumLength = 3)]
         [Column("group_name")]
-        public string group_name { get; set; }
+        public string? group_name { get; set; }
 
         [Column("direction", TypeName = "TINYINT")]
         [ForeignKey(nameof(Direction))]
@@ -29,9 +29,6 @@ namespace Academy2.Models
         public DateOnly? start_date { get; set; }
 
         // Навигационное свойство: связь «многие к одному» к исправленному классу Direction
-        public Direction Direction { get; set; }
+        public Direction? Direction { get; set; }
     }
 }
-
-
-

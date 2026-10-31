@@ -12,7 +12,7 @@
 
 <h1>Список групп</h1>
 
-<div class="controls mb-3">
+<div class="controls">
     <p class="mb-0">
         <a href="groups/create" class="btn btn-primary">Добавить</a>
     </p>
@@ -20,10 +20,10 @@
     <div>
         <input type="text"
                class="form-control"
-               placeholder="Поиск по группам или направлениям..."
+               placeholder="Поиск группы..."
                @bind="searchString"
                @bind:event="oninput"
-               style="width: 320px;" />
+               style="width: 250px;" />
     </div>
 </div>
 
@@ -64,8 +64,7 @@
 
             if (!string.IsNullOrWhiteSpace(searchString))
             {
-                result = result.Where(g => g.group_name.Contains(searchString)
-                                        || (g.Direction != null && g.Direction.direction_name.Contains(searchString)));
+                result = result.Where(g =>(g.group_name != null && g.group_name.Contains(searchString)) || (g.Direction != null && g.Direction.direction_name != null && g.Direction.direction_name.Contains(searchString)));
             }
 
             return result;

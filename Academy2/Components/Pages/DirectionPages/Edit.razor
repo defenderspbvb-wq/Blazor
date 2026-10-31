@@ -6,41 +6,38 @@
 
 <PageTitle>Edit</PageTitle>
 
-<h1>Edit</h1>
+<h1>Редактирование направления</h1>
 
-<h2>Direction</h2>
 <hr />
 @if (direction is null)
 {
-    <p><em>Loading...</em></p>
+    <p><em>Загрузка...</em></p>
 }
 else
 {
     <div class="row">
         <div class="col-md-4">
-            <!-- Модель жестко привязана к свойству direction с маленькой буквы -->
             <EditForm method="post" Model="direction" OnValidSubmit="UpdateDirection" FormName="edit_direction_form" Enhance>
                 <DataAnnotationsValidator />
                 <ValidationSummary role="alert" class="text-danger" />
                 
-                <!-- Скрытое поле для передачи ID направления при POST-запросе -->
                 <input type="hidden" name="direction.direction_id" value="@direction.direction_id" />
                 
                 <div class="mb-3">
                     <span class="text-danger">*</span>
-                    <label for="direction_name" class="form-label">direction_name:</label>
+                    <label for="direction_name" class="form-label">Название:</label>
                     <InputText id="direction_name" @bind-Value="direction.direction_name" class="form-control" aria-required="true" />
                     <ValidationMessage For="() => direction.direction_name" class="text-danger" />
                 </div>
                 
-                <button type="submit" class="btn btn-primary">Save</button>
+                <button type="submit" class="btn btn-primary">Сохранить</button>
             </EditForm>
         </div>
     </div>
 }
 
 <div>
-    <a href="/directions">Back to List</a>
+    <a href="/directions">Вернуться к списку</a>
 </div>
 
 @code {

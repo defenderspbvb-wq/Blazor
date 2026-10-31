@@ -14,7 +14,7 @@
 
 <div class="controls">
     <p class="mb-0">
-        <a href="directions/create" class="btn btn-primary">Создать</a>
+        <a href="directions/create" class="btn btn-primary">Добавить</a>
     </p>
 
     <div>
@@ -62,7 +62,7 @@
 
             if (!string.IsNullOrWhiteSpace(searchString))
             {
-                result = result.Where(d => d.direction_name.Contains(searchString));
+                result = result.Where(d => d.direction_name != null && d.direction_name.Contains(searchString));
             }
 
             return result;

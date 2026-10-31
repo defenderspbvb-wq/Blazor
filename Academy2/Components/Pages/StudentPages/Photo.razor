@@ -1,0 +1,49 @@
+﻿<h3>Фотография</h3>
+
+<div class="photo-area">
+    <div class="mb-2">
+        @if (Human?.photo != null)
+        {
+            <img src="data:image/jpeg;base64,@Convert.ToBase64String(Human.photo)"
+                 alt="Фотография"
+                 style="max-width: 200px; max-height: 200px; object-fit: cover; border-radius: 4px;" />
+        }
+    </div>
+    
+    @if (AllowChange)
+    {
+        <InputFile OnChange="LoadPhoto" class="form-control" accept=".jpg,.jpeg,.png" />
+    }
+</div>
+
+@code
+{
+    [Parameter]
+    public Models.Human Human { get; set; } = default!;
+
+    [Parameter]
+    public bool AllowChange { get; set; }
+    private IBrowserFile? _selectedFile;
+    private const long MaxFileSize = 1024 * 1024 * 10;
+
+    private async Task LoadPhoto(InputFileChangeEventArgs e)
+    {
+        _selectedFile = e.File;
+
+        if (_selectedFile != null)
+        {
+            try
+            {
+
+                using var ms = new MemoryStream();
+                await _selectedFile.OpenReadStream(MaxFileSize).CopyToAsync(ms);
+                
+                Human.photo = ms.ToArray();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Ошибка загрузки фото: {ex.Message}");
+            }
+        }
+    }
+}

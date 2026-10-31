@@ -1,0 +1,108 @@
+@page "/students/create"
+@rendermode InteractiveServer
+@using Microsoft.EntityFrameworkCore
+@using Academy2.Models
+@inject IDbContextFactory<Academy2Context> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Добавление студента</PageTitle>
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Добавление нового студента</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="/students">Студенты</a></li>
+        <li class="breadcrumb-item active">Новая запись</li>
+    </ol>
+
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <i class="fas fa-user-plus me-1"></i> Анкета студента
+        </div>
+        <div class="card-body bg-light">
+            <EditForm Model="Student" OnValidSubmit="AddStudent" FormName="create">
+                <DataAnnotationsValidator />
+                <ValidationSummary class="text-danger mb-3" role="alert" />
+                
+                <div class="row g-4">
+                    <div class="col-lg-7">
+                        <ChooseGroup Student="Student" />
+
+                        <div class="mb-3">
+                            <label for="last_name" class="form-label font-weight-bold fw-bold">
+                                <span class="text-danger">*</span> Фамилия:
+                            </label>
+                            <InputText id="last_name" @bind-Value="Student.last_name" class="form-control form-control-lg w-100" placeholder="Введите фамилию" />
+                            <ValidationMessage For="() => Student.last_name" class="text-danger" />
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="first_name" class="form-label fw-bold">
+                                <span class="text-danger">*</span> Имя:
+                            </label>
+                            <InputText id="first_name" @bind-Value="Student.first_name" class="form-control form-control-lg w-100" placeholder="Введите имя" />
+                            <ValidationMessage For="() => Student.first_name" class="text-danger" />
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="middle_name" class="form-label fw-bold">Отчество:</label>
+                            <InputText id="middle_name" @bind-Value="Student.middle_name" class="form-control form-control-lg w-100" placeholder="Введите отчество (при наличии)" />
+                            <ValidationMessage For="() => Student.middle_name" class="text-danger" />
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="birth_date" class="form-label fw-bold">
+                                <span class="text-danger">*</span> Дата рождения:
+                            </label>
+                            <InputDate id="birth_date" @bind-Value="Student.birth_date" class="form-control form-control-lg w-100" />
+                            <ValidationMessage For="() => Student.birth_date" class="text-danger" />
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="email" class="form-label fw-bold">Электронная почта (Email):</label>
+                            <InputText id="email" @bind-Value="Student.email" class="form-control form-control-lg w-100" placeholder="example@academy.ru" />
+                            <ValidationMessage For="() => Student.email" class="text-danger" />
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="phone" class="form-label fw-bold">Номер телефона:</label>
+                            <InputText id="phone" @bind-Value="Student.phone" class="form-control form-control-lg w-100" placeholder="+7 (999) 000-00-00" />
+                            <ValidationMessage For="() => Student.phone" class="text-danger" />
+                        </div>
+                    </div>
+
+                    <div class="col-lg-5 border-start ps-lg-5 d-flex flex-column align-items-center justify-content-start pt-3">
+                        <div class="w-100 text-center">
+                            <Photo Human="Student" AllowChange="true" />
+                            <ValidationMessage For="() => Student.photo" class="text-danger mt-2" />
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-footer bg-white border-top-0 mt-4 px-0 pb-0 d-flex gap-2">
+                    <button type="submit" class="btn btn-success btn-lg px-5 shadow-sm">
+                        <i class="fas fa-save me-1"></i> Сохранить
+                    </button>
+                    <a href="/students" class="btn btn-outline-secondary btn-lg px-4">
+                        Отмена
+                    </a>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code
+{
+    [SupplyParameterFromForm]
+    private Student Student { get; set; } = default!;
+
+    protected override void OnInitialized() => Student ??= new();
+
+    private async Task AddStudent()
+    {
+        using var context = await DbFactory.CreateDbContextAsync();
+        context.Students.Add(Student);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/students");
+    }
+}

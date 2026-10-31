@@ -1,0 +1,35 @@
+﻿@using Academy2.Models
+@using Microsoft.EntityFrameworkCore
+@inject IDbContextFactory<Academy2Context> DbFactory
+
+<h5>Выбор группы</h5>
+
+<div class="mb-3">
+    <span class="text-danger">*</span>
+    <label for="group" class="form-label">Группа:</label>
+    
+    <InputSelect id="group" @bind-Value="Student.group" class="form-control">
+        <option value="">-- Выберите группу --</option>
+        @if (groups != null)
+        {
+            @foreach (Group group in groups)
+            {
+                <option value="@group.group_id">@group.group_name</option>
+            }
+        }
+    </InputSelect>
+    <ValidationMessage For="() => Student.group" class="text-danger" />
+</div>
+
+@code
+{
+    [Parameter]
+    public Student Student { get; set; } = default!;
+    private List<Group>? groups;
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = await DbFactory.CreateDbContextAsync();
+        groups = await context.Groups.AsNoTracking().ToListAsync();
+    }
+}
