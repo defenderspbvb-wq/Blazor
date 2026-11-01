@@ -21,16 +21,16 @@
         <dl class="row">
             <dt class="col-sm-3">Название направления</dt>
             <dd class="col-sm-9">@direction.direction_name</dd>
-            
+
             <dt class="col-sm-3">Всего групп</dt>
             <dd class="col-sm-9"><span class="badge bg-primary">@totalGroupsCount</span></dd>
-            
+
             <dt class="col-sm-3">Всего студентов</dt>
             <dd class="col-sm-9"><span class="badge bg-success">@totalStudentsCount</span></dd>
         </dl>
 
         <h3 class="mt-4 mb-3">Группы направления</h3>
-        
+
         @if (hasGroups == false)
         {
             <div class="alert alert-info text-center p-3 text-muted">
@@ -46,9 +46,12 @@
                     </TemplateColumn>
                     <PropertyColumn Property="group => group.start_time" Title="Время начала" />
                     <PropertyColumn Property="group => group.start_date" Title="Дата начала" Format="dd.MM.yyyy" />
+                    <TemplateColumn Context="group" Title="Студентов в группе">
+                        @GetStudentsCount(group.group_id)
+                    </TemplateColumn>
                 </QuickGrid>
             </div>
-            
+
             <div class="page-size-chooser mt-3 mb-4">
                 <Paginator State="pagination" />
             </div>
@@ -61,13 +64,11 @@
     }
 </div>
 
-@code
-{
+@code {
     private Direction? direction;
     private int totalGroupsCount;
     private int totalStudentsCount;
     private bool? hasGroups;
-
     private PaginationState pagination = new PaginationState { ItemsPerPage = 5 };
     private GridSort<Group> sortBy = GridSort<Group>.ByAscending(g => g.group_name);
 
@@ -77,7 +78,6 @@
     protected override async Task OnInitializedAsync()
     {
         using var context = await DbFactory.CreateDbContextAsync();
-        
         byte targetId = (byte)direction_id;
 
         direction = await context.Directions.FirstOrDefaultAsync(m => m.direction_id == targetId);
@@ -91,13 +91,11 @@
         hasGroups = await context.Groups.AnyAsync(g => g.direction == targetId);
         totalGroupsCount = await context.Groups.CountAsync(g => g.direction == targetId);
         totalStudentsCount = await context.Students.CountAsync(s => s.Group != null && s.Group.direction == targetId);
-
     }
 
     private async ValueTask<GridItemsProviderResult<Group>> GroupsDataProvider(GridItemsProviderRequest<Group> request)
     {
         using var context = await DbFactory.CreateDbContextAsync();
-        
         byte targetId = (byte)direction_id;
 
         var query = context.Groups
@@ -105,6 +103,7 @@
             .AsNoTracking();
 
         var totalCount = await query.CountAsync(request.CancellationToken);
+
         query = query.OrderBy(g => g.group_name);
 
         var items = await query
@@ -113,5 +112,12 @@
             .ToArrayAsync(request.CancellationToken);
 
         return GridItemsProviderResult.From(items, totalCount);
+    }
+
+    // Вспомогательный синхронный метод для рендеринга количества студентов
+    private int GetStudentsCount(int groupId)
+    {
+        using var context = DbFactory.CreateDbContext();
+        return context.Students.Count(s => s.Group != null && s.Group.group_id == groupId);
     }
 }

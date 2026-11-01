@@ -31,6 +31,14 @@
     <QuickGrid Class="table table-striped table-bordered" Items="FilteredDirections" Pagination="pagination">
         <PropertyColumn Property="direction => direction.direction_id" Sortable="true" Title="ID" />
         <PropertyColumn Property="direction => direction.direction_name" Sortable="true" Title="Название направления" />
+        
+        <TemplateColumn Context="direction" Title="Количество групп">
+            @GetGroupsCount(direction.direction_id)
+        </TemplateColumn>
+
+        <TemplateColumn Context="direction" Title="Количество студентов">
+            @GetStudentsCount(direction.direction_id)
+        </TemplateColumn>
 
         <TemplateColumn Context="direction" Title="Действия">
             <a href="@($"directions/edit?direction_id={direction.direction_id}")" class="btn-action btn-action-edit">Edit</a>
@@ -67,6 +75,18 @@
 
             return result;
         }
+    }
+
+    private int GetGroupsCount(int directionId)
+    {
+        byte targetId = (byte)directionId;
+        return context.Groups.Count(g => g.direction == targetId);
+    }
+
+    private int GetStudentsCount(int directionId)
+    {
+        byte targetId = (byte)directionId;
+        return context.Students.Count(s => s.Group != null && s.Group.direction == targetId);
     }
 
     public async ValueTask DisposeAsync() => await context.DisposeAsync();
