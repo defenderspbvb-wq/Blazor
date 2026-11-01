@@ -134,7 +134,8 @@ else
             }
         }
 
-        NavigationManager.NavigateTo("/students");
+        // NavigationManager.NavigateTo("/students");
+        NavigationManager.NavigateTo($"/students/details?Stud_id={Student.stud_id}");
     }
 
     private async Task<bool> StudentExists(int id)
