@@ -1,0 +1,69 @@
+@page "/teachers"
+@rendermode InteractiveServer
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using Microsoft.EntityFrameworkCore
+@using Academy2.Models
+@implements IAsyncDisposable
+@inject IDbContextFactory<Academy2Context> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Index</PageTitle>
+
+<h1>Index</h1>
+
+<p>
+    <a href="teachers/create">Create New</a>
+</p>
+
+@if (teachersQuery is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <QuickGrid Class="table" Items="teachersQuery">
+        <PropertyColumn Property="teacher => teacher.full_name" Title="Full Name" Sortable="true" />
+        <PropertyColumn Property="teacher => teacher.work_since" Title="Work Since" Sortable="true" />
+        <PropertyColumn Property="teacher => teacher.rate" Title="Rate" Sortable="true" />
+        <TemplateColumn Title="Disciplines">
+            @if (context.TeacherDisciplines != null && context.TeacherDisciplines.Any())
+            {
+                <span>
+                    @string.Join(", ", context.TeacherDisciplines
+                        .Where(td => td.Discipline != null)
+                        .Select(td => td.Discipline.discipline_name))
+                </span>
+            }
+            else
+            {
+                <span class="text-muted">Нет дисциплин</span>
+            }
+        </TemplateColumn>
+
+        <PropertyColumn Property="teacher => teacher.email" Title="Email" />
+        <PropertyColumn Property="teacher => teacher.phone" Title="Phone" />
+        <PropertyColumn Property="teacher => teacher.birth_date" Title="Birth Date" Sortable="true" />
+
+        <TemplateColumn Context="teacher">
+            <a href="@($"teachers/edit?teacher_id={teacher.teacher_id}")">Edit</a> |
+            <a href="@($"teachers/details?teacher_id={teacher.teacher_id}")">Details</a> |
+            <a href="@($"teachers/delete?teacher_id={teacher.teacher_id}")">Delete</a>
+        </TemplateColumn>
+    </QuickGrid>
+}
+
+@code
+{
+    private Academy2Context context = default!;
+    private IQueryable<Teacher>? teachersQuery;
+
+    protected override void OnInitialized()
+    {
+        context = DbFactory.CreateDbContext();
+        teachersQuery = context.Teachers
+            .Include(t => t.TeacherDisciplines)
+                .ThenInclude(td => td.Discipline);
+    }
+
+    public async ValueTask DisposeAsync() => await context.DisposeAsync();
+}

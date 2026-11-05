@@ -1,0 +1,65 @@
+@page "/disciplines"
+@rendermode InteractiveServer
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using Microsoft.EntityFrameworkCore
+@using Academy2.Models
+@implements IAsyncDisposable
+@inject IDbContextFactory<Academy2Context> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Index</PageTitle>
+
+<h1>Index</h1>
+
+<p>
+    <a href="disciplines/create">Create New</a>
+</p>
+
+@if (disciplinesQuery is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <QuickGrid Class="table" Items="disciplinesQuery">
+        <PropertyColumn Property="discipline => discipline.discipline_name" Title="Name" Sortable="true" />
+        <PropertyColumn Property="discipline => discipline.number_of_lessons" Title="Lessons" Sortable="true" />
+        <TemplateColumn Title="Teachers">
+            @if (context.TeacherDisciplines != null && context.TeacherDisciplines.Any())
+            {
+                <span>
+                    @string.Join(", ", context.TeacherDisciplines
+                        .Where(td => td.Teacher != null)
+                        .Select(td => td.Teacher.full_name))
+                </span>
+            }
+            else
+            {
+                <span class="text-muted">Нет преподавателей</span>
+            }
+        </TemplateColumn>
+
+        <TemplateColumn Context="discipline">
+            <a href="@($"disciplines/edit?discipline_id={discipline.discipline_id}")">Edit</a> |
+            <a href="@($"disciplines/details?discipline_id={discipline.discipline_id}")">Details</a> |
+            <a href="@($"disciplines/delete?discipline_id={discipline.discipline_id}")">Delete</a>
+        </TemplateColumn>
+    </QuickGrid>
+}
+
+@code
+{
+    private Academy2Context context = default!;
+    private IQueryable<Discipline>? disciplinesQuery;
+
+    protected override void OnInitialized()
+    {
+        context = DbFactory.CreateDbContext();
+        disciplinesQuery = context.Disciplines
+            .Include(d => d.TeacherDisciplines)
+                .ThenInclude(td => td.Teacher);
+    }
+
+    public async ValueTask DisposeAsync() => await context.DisposeAsync();
+}
+

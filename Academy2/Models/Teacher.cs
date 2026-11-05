@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Academy2.Models
@@ -12,6 +13,6 @@ namespace Academy2.Models
         [Column(TypeName = "SMALLMONEY")]
         public int rate { get; set; }
         // Navigation properties
-        public ICollection<Discipline> Disciplines { get; set; }
+        public ICollection<TeacherDiscipline> TeacherDisciplines { get; set; } = new List<TeacherDiscipline>();
     }
 }

@@ -1,0 +1,173 @@
+@page "/disciplines/edit"
+@rendermode InteractiveServer
+@using Microsoft.EntityFrameworkCore
+@using Academy2.Models
+@inject IDbContextFactory<Academy2Context> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Edit Discipline</PageTitle>
+
+<h1>Edit</h1>
+
+<h2>Discipline</h2>
+<hr />
+
+@if (discipline is null || allTeachers is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-6">
+            <EditForm Model="discipline" OnValidSubmit="UpdateDiscipline" FormName="edit-discipline">
+                <DataAnnotationsValidator />
+                <ValidationSummary class="text-danger" role="alert" />
+
+                <input type="hidden" value="@discipline.discipline_id" />
+
+                <div class="mb-3">
+                    <label for="disciplinename" class="form-label">discipline_name:</label>
+                    <InputText id="disciplinename" @bind-Value="discipline.discipline_name" class="form-control" />
+                    <ValidationMessage For="() => discipline.discipline_name" class="text-danger" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="numberoflessons" class="form-label">number_of_lessons:</label>
+                    <InputNumber id="numberoflessons" @bind-Value="discipline.number_of_lessons" class="form-control" />
+                    <ValidationMessage For="() => discipline.number_of_lessons" class="text-danger" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Преподаватели этой дисциплины:</strong></label>
+                    <div class="card p-3" style="max-height: 250px; overflow-y: auto;">
+                        @foreach (var teacher in allTeachers)
+                        {
+                            var tId = teacher.teacher_id;
+                            <div class="form-check mb-1">
+                                <input class="form-check-input"
+                                       type="checkbox"
+                                       id="teacher_@tId"
+                                       checked="@selectedTeacherIds.Contains(tId)"
+                                       @onchange="(e) => ToggleTeacher(tId, e.Value)" />
+                                <label class="form-check-label" for="teacher_@tId">
+                                    @teacher.full_name
+                                </label>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Save</button> |
+                <a href="/disciplines">Back to List</a>
+            </EditForm>
+        </div>
+    </div>
+}
+
+@code
+{
+    private Discipline? discipline;
+    private List<Teacher>? allTeachers;
+    
+    // Хранит ID выбранных чекбоксами преподавателей
+    private HashSet<int> selectedTeacherIds = new();
+
+    [SupplyParameterFromQuery]
+    private int discipline_id { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+
+        // Загружаем дисциплину вместе с её текущими связями
+        discipline = await context.Disciplines
+            .Include(d => d.TeacherDisciplines)
+            .FirstOrDefaultAsync(m => m.discipline_id == discipline_id);
+
+        if (discipline is null)
+        {
+            NavigationManager.NotFound();
+            return;
+        }
+
+        // Выкачиваем из базы всех преподавателей для чекбоксов
+        allTeachers = await context.Teachers.ToListAsync();
+
+        // Заполняем хэшсет ID преподавателей, которые УЖЕ ведут этот предмет
+        selectedTeacherIds = discipline.TeacherDisciplines
+            .Select(td => td.teacher_id)
+            .ToHashSet();
+    }
+
+    private void ToggleTeacher(int teacherId, object? isChecked)
+    {
+        if (isChecked is bool checkedValue && checkedValue)
+        {
+            selectedTeacherIds.Add(teacherId);
+        }
+        else
+        {
+            selectedTeacherIds.Remove(teacherId);
+        }
+    }
+
+    private async Task UpdateDiscipline()
+    {
+        if (discipline is null) return;
+
+        using var context = DbFactory.CreateDbContext();
+        context.Attach(discipline);
+        context.Entry(discipline).State = EntityState.Modified;
+
+        // Загружаем из базы существующие в данный момент связи для этой дисциплины
+        var currentRelations = await context.TeacherDisciplines
+            .Where(td => td.discipline_id == discipline.discipline_id)
+            .ToListAsync();
+
+        // Удаляем те связи, у которых на форме убрали галочки
+        var relationsToRemove = currentRelations
+            .Where(td => !selectedTeacherIds.Contains(td.teacher_id));
+        context.TeacherDisciplines.RemoveRange(relationsToRemove);
+
+        // Добавляем новые связи, на которые галочки только что поставили
+        var currentTeacherIds = currentRelations.Select(td => td.teacher_id).ToHashSet();
+        foreach (var teacherId in selectedTeacherIds)
+        {
+            if (!currentTeacherIds.Contains(teacherId))
+            {
+                var newRelation = new TeacherDiscipline
+                {
+                    discipline_id = discipline.discipline_id,
+                    teacher_id = teacherId
+                };
+                context.TeacherDisciplines.Add(newRelation);
+            }
+        }
+
+        try
+        {
+            await context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!DisciplineExists(discipline.discipline_id, context))
+            {
+                NavigationManager.NotFound();
+                return;
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        NavigationManager.NavigateTo("/disciplines");
+    }
+
+
+    private bool DisciplineExists(int id, Academy2Context context)
+    {
+        return context.Disciplines.Any(e => e.discipline_id == id);
+    }
+}
