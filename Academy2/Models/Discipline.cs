@@ -19,5 +19,8 @@ namespace Academy2.Models
         [Column(TypeName = "TINYINT")]
         public int number_of_lessons { get; set; }
         public ICollection<TeacherDiscipline> TeacherDisciplines { get; set; } = new List<TeacherDiscipline>();
+        public ICollection<DependentDiscipline> DependentDisciplines { get; set; } = new List<DependentDiscipline>();
+        public ICollection<RequiredDiscipline> RequiredDisciplines { get; set; } = new List<RequiredDiscipline>();
+
     }
 }

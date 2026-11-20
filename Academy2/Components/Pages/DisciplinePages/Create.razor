@@ -28,6 +28,39 @@
                 <InputNumber id="number_of_lessons" @bind-Value="Discipline.number_of_lessons" class="form-control" aria-required="true" />
                 <ValidationMessage For="() => Discipline.number_of_lessons" class="text-danger" />
             </div>
+
+            <div class="mb-3">
+                <label class="form-label"><strong>Зависимые дисциплины:</strong></label>
+                <div class="card p-3" style="max-height: 200px; overflow-y: auto;">
+                    @foreach (var d in allDisciplines)
+                    {
+                        var dId = d.discipline_id;
+                        <div class="form-check mb-1">
+                            <input class="form-check-input" type="checkbox" id="dep_@dId"
+                                   checked="@selectedDependentIds.Contains(dId)"
+                                   @onchange="(e) => ToggleId(selectedDependentIds, dId, e.Value)" />
+                            <label class="form-check-label" for="dep_@dId">@d.discipline_name</label>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label"><strong>Требуемые дисциплины:</strong></label>
+                <div class="card p-3" style="max-height: 200px; overflow-y: auto;">
+                    @foreach (var d in allDisciplines)
+                    {
+                        var dId = d.discipline_id;
+                        <div class="form-check mb-1">
+                            <input class="form-check-input" type="checkbox" id="req_@dId"
+                                   checked="@selectedRequiredIds.Contains(dId)"
+                                   @onchange="(e) => ToggleId(selectedRequiredIds, dId, e.Value)" />
+                            <label class="form-check-label" for="req_@dId">@d.discipline_name</label>
+                        </div>
+                    }
+                </div>
+            </div>
+
             <button type="submit" class="btn btn-primary">Create</button>
         </EditForm>
     </div>
@@ -40,24 +73,69 @@
 @code
 {
     private Discipline Discipline { get; set; } = new();
+    private List<Discipline> allDisciplines = new();
+    private HashSet<int> selectedDependentIds = new();
+    private HashSet<int> selectedRequiredIds = new();
 
-    protected override void OnInitialized() => Discipline ??= new();
+    protected override async Task OnInitializedAsync()
+    {
+        Discipline ??= new();
+        using var context = DbFactory.CreateDbContext();
+        allDisciplines = await context.Disciplines.ToListAsync();
+    }
+
+    private void ToggleId(HashSet<int> set, int id, object? isChecked)
+    {
+        if (isChecked is bool checkedValue && checkedValue)
+            set.Add(id);
+        else
+            set.Remove(id);
+    }
 
     private async Task AddDiscipline()
     {
         using var context = DbFactory.CreateDbContext();
 
-        // Создаем чистый объект для базы данных
         var dbDiscipline = new Discipline
         {
             discipline_name = Discipline.discipline_name,
             number_of_lessons = Discipline.number_of_lessons
         };
 
-        // Добавляем и сохраняем в базу данных
         context.Disciplines.Add(dbDiscipline);
+        await context.SaveChangesAsync(); // Сохраняем, чтобы получить сгенерированный discipline_id
+
+        foreach (var depId in selectedDependentIds)
+        {
+            context.DependentDisciplines.Add(new DependentDiscipline
+            {
+                discipline = dbDiscipline.discipline_id,
+                dependent_discipline = depId
+            });
+            context.RequiredDisciplines.Add(new RequiredDiscipline
+            {
+                discipline = depId,
+                required_discipline = dbDiscipline.discipline_id
+            });
+        }
+
+        foreach (var reqId in selectedRequiredIds)
+        {
+            context.RequiredDisciplines.Add(new RequiredDiscipline
+            {
+                discipline = dbDiscipline.discipline_id,
+                required_discipline = reqId
+            });
+            context.DependentDisciplines.Add(new DependentDiscipline
+            {
+                discipline = reqId,
+                dependent_discipline = dbDiscipline.discipline_id
+            });
+        }
+
+
         await context.SaveChangesAsync();
-        
         NavigationManager.NavigateTo("/disciplines");
     }
+
 }
